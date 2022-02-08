@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <DUT Name="StructFrame" Id="{4adb7f58-7419-4975-bd60-cdfad01da7ce}">
+    <Declaration><![CDATA[TYPE StructFrame :
+STRUCT
+	rXpos : REAL := 0;
+	rYpos : REAL := 0;
+	rZpos : REAL := 0;
+	sAlias : STRING := '';
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

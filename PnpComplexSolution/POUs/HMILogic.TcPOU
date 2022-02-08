@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.9">
+  <POU Name="HMILogic" Id="{50410414-934b-453f-b77d-63eece6a22a7}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM HMILogic
+VAR
+	bHmiTeach : BOOL := FALSE;
+	bOverride : BOOL := FALSE;
+
+	rCurrentx : REAL := 0;
+	rCurrenty : REAL := 0;
+	rCurrentz : REAL := -750;
+	sCurrentalias : STRING := 'frame';
+	
+	PRINT : STRING := '';
+	
+	iCurrentIndex : INT := 0;
+	
+	iDuplicateIndex : INT := 0;
+	
+	bThrowHmiException : BOOL := FALSE;
+	
+	TaughtFrames : ARRAY [0..20] OF StructFrame;
+	FrameObject : FrameClass := (AllFrames := TaughtFrames);
+	NonEmptyFrames : ARRAY [0..20] OF StructFrame;
+	NonEmptyFrameAlias : ARRAY [0..20] OF STRING;
+	
+	bHmiArrange : BOOL;
+	ArrangedAliasInputs : ARRAY [0..20] OF STRING;
+	ArrangedIndex : ARRAY[0..20] OF INT;
+	ArrangedFrames : ARRAY [0..20] OF StructFrame;
+	
+	bRun : BOOL := FALSE;
+	
+	switches : (resting, checkduplicates, handleexception, getframeindex, teachframe, getnonempties);
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF bHmiTeach THEN // if TEACH button is pressed on the HMI
+	CASE switches OF
+	
+		resting: // resting state
+			PRINT := 'RESTING';
+			switches := checkduplicates;
+			
+		checkduplicates: // identify duplicates and throw exception if found
+			PRINT := 'CHECKING DUPLICATES';
+			iDuplicateIndex := FrameObject.DuplicateExists(sTargetAlias := sCurrentalias); // function returns index of found duplicate, 0 if none are found
+			IF iDuplicateIndex = 0 THEN
+				switches := getframeindex; // if no duplicates are found, get the first empty frame to teach
+			ELSE
+				switches := handleexception; // handle the exception
+			END_IF
+			
+		handleexception:
+				bThrowHmiException := TRUE; // feedback error to OnButtonUp on the Teach Button to get permission to override
+				IF bOverride THEN // if user chooses to override
+				PRINT := 'TEACHING FRAMES';
+				FrameObject.Teach(iArrayIndex := iDuplicateIndex, rCurrentXpos:= rCurrentx, rCurrentYpos:= rCurrenty,
+										rCurrentZpos:= rCurrentz, sAlias:= sCurrentalias); // teach frames
+				switches := getnonempties; // filters empty frames
+				bOverride := FALSE; // reset variables
+				bThrowHmiException := FALSE;
+				ELSE
+					switches := resting; // filters empty frames
+					bHmiTeach := FALSE;
+				END_IF
+	
+		getframeindex:
+			PRINT := 'GETTING FRAME INDEX';
+			iCurrentIndex := FrameObject.FindFirstEmpty(); // get the first empty frame to teach
+			switches := teachframe;
+		
+		teachframe:
+			PRINT := 'TEACHING FRAMES';
+			FrameObject.Teach(iArrayIndex := iCurrentIndex, rCurrentXpos:= rCurrentx, rCurrentYpos:= rCurrenty,
+	 						rCurrentZpos:= rCurrentz, sAlias:= sCurrentalias); // teach frames
+			switches := getnonempties;
+		
+		getnonempties:
+			PRINT := 'GETTING NON EMPTIES';
+			NonEmptyFrames := FrameObject.NonEmpty(); // get non-empty frames
+			NonEmptyFrameAlias := FrameObject.GetNonEmptyFrameAlias(); // get array of aliases to display in ARRANGE page
+			switches := resting;
+			bHmiTeach := FALSE;
+	
+	END_CASE
+END_IF
+
+IF bHmiArrange THEN
+	PRINT := 'asasddas';
+	ArrangedFrames := FrameObject.MapArrangedAliasToFrameIndex(arrangedAlias := ArrangedAliasInputs, NonEmptyFrames := NonEmptyFrames);
+END_IF
+
+]]></ST>
+    </Implementation>
+    <LineIds Name="HMILogic">
+      <LineId Id="36" Count="24" />
+      <LineId Id="95" Count="1" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="62" Count="23" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="86" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
