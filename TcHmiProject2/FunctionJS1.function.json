@@ -1,0 +1,30 @@
+﻿{
+  "function": {
+    "name": "FunctionJS1",
+    "namespace": "TcHmi.Functions.TcHmiProject2",
+    "displayName": "FunctionJS1",
+    "description": "",
+    "waitMode": "Synchronous",
+    "category": "",
+    "returnValue": {
+      "type": "tchmi:general#/definitions/String"
+    },
+    "visible": true,
+    "injectContextObject": false,
+    "arguments": [
+      {
+        "name": "combobox",
+        "displayName": "combobox",
+        "type": "tchmi:framework#/definitions/TcHmi.Controls.Beckhoff.TcHmiCombobox",
+        "description": "This is an important Parameter which does... This text is used in a tooltip.",
+        "defaultValue": 0.0,
+        "required": true,
+        "bindable": true,
+        "restParameter": false,
+        "asReference": false,
+        "allowControlAttributeBindingOptions": false
+      }
+    ]
+  },
+  "$schema": "../.hmiframework/Schema/FunctionDescription.Schema.json"
+}
